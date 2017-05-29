@@ -1,6 +1,7 @@
 // Import System requirements
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import GSignInButton from 'vue-google-signin-button'
 
 import { sync } from 'vuex-router-sync'
 import routes from './routes'
@@ -19,6 +20,7 @@ Vue.filter('prettyDate', prettyDate)
 Vue.filter('pluralize', pluralize)
 
 Vue.use(VueRouter)
+Vue.use(GSignInButton)
 
 // Routing logic
 var router = new VueRouter({
@@ -29,18 +31,19 @@ var router = new VueRouter({
   }
 })
 
-// Some middleware to help us ensure the user is authenticated.
 router.beforeEach((to, from, next) => {
-  // window.console.log('Transition', transition)
-  if (to.auth && (to.router.app.$store.state.token === 'null')) {
-    window.console.log('Not authenticated')
-    next({
-      path: '/login',
-      query: { redirect: to.fullPath }
-    })
-  } else {
-    next()
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    const authUser = JSON.parse(window.localStorage.getItem('authUser'))
+    if (authUser && authUser.access_token) {
+      next()
+    } else {
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      })
+    }
   }
+  next()
 })
 
 sync(store, router)

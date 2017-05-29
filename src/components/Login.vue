@@ -4,6 +4,15 @@
         <div class="container">
           <img src="/static/img/logo.png" class="center-block logo">
           <div class="text-center col-md-4 col-sm-offset-4">
+
+            <!-- Google Singin button -->
+            <g-signin-button
+              :params="googleSignInParams"
+              @success="onSignInSuccess"
+              @error="onSignInError">
+              Sign in with Google
+            </g-signin-button>
+
             <!-- login form -->
             <form class="ui form loginForm"  @submit.prevent="checkCreds">
 
@@ -38,10 +47,26 @@ export default {
       loading: '',
       username: '',
       password: '',
-      response: ''
+      response: '',
+      /**
+       * The Auth2 parameters, as seen on
+       * https://developers.google.com/identity/sign-in/web/reference#gapiauth2initparams.
+       * As the very least, a valid client_id must present.
+       * @type {Object}
+       */
+      googleSignInParams: {
+        client_id: '691917115928-sg5lme83hcl9udtobiqai7joe9gq63la.apps.googleusercontent.com'
+      }
     }
   },
   methods: {
+    onSignInSuccess (googleUser) {
+      const profile = googleUser.getBasicProfile()
+      console.log(profile)
+    },
+    onSignInError (error) {
+      console.log('OH NOES', error)
+    },
     checkCreds () {
       const {username, password} = this
 
@@ -131,5 +156,14 @@ html, body, .container-table {
 }
 .input-group input {
   height: 4em;
+}
+.g-signin-button {
+  /* This is where you control how the button looks. Be creative! */
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background-color: #3c82f7;
+  color: #fff;
+  box-shadow: 0 3px 0 #0f69ff;
 }
 </style>
