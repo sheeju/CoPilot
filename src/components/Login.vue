@@ -9,11 +9,14 @@
             <g-signin-button
               :params="googleSignInParams"
               @success="onSignInSuccess"
-              @error="onSignInError">
+              @error="onSignInError"
+              class="btn btn-primary btn-lg"
+              >
               Sign in with Google
             </g-signin-button>
 
             <!-- login form -->
+            <!--
             <form class="ui form loginForm"  @submit.prevent="checkCreds">
 
               <div class="input-group">
@@ -27,6 +30,7 @@
               </div>
               <button type="submit" v-bind:class="'btn btn-primary btn-lg ' + loading">Submit</button>
             </form>
+            -->
 
             <!-- errors -->
             <div v-if=response class="text-red"><p>{{response}}</p></div>
@@ -37,7 +41,6 @@
 </template>
 
 <script>
-import api from '../api'
 
 export default {
   name: 'Login',
@@ -63,59 +66,23 @@ export default {
     onSignInSuccess (googleUser) {
       const profile = googleUser.getBasicProfile()
       console.log(profile)
+      console.log(profile.U3)
+      var token = 'Bearer ' + profile.Eea
+      this.$store.commit('SET_USER', profile)
+      this.$store.commit('SET_TOKEN', token)
+
+      if (window.localStorage) {
+        window.localStorage.setItem('user', JSON.stringify(profile))
+        window.localStorage.setItem('token', token)
+      }
+      this.$router.push('/')
     },
     onSignInError (error) {
-      console.log('OH NOES', error)
-    },
-    checkCreds () {
-      const {username, password} = this
-
-      this.toggleLoading()
-      this.resetResponse()
       this.$store.commit('TOGGLE_LOADING')
+      console.log(error)
 
-      /* Making API call to authenticate a user */
-      api.request('post', '/login', {username, password})
-      .then(response => {
-        this.toggleLoading()
-
-        var data = response.data
-        /* Checking if error object was returned from the server */
-        if (data.error) {
-          var errorName = data.error.name
-          if (errorName) {
-            this.response = errorName === 'InvalidCredentialsError'
-            ? 'Username/Password incorrect. Please try again.'
-            : errorName
-          } else {
-            this.response = data.error
-          }
-
-          return
-        }
-
-        /* Setting user in the state and caching record to the localStorage */
-        if (data.user) {
-          var token = 'Bearer ' + data.token
-
-          this.$store.commit('SET_USER', data.user)
-          this.$store.commit('SET_TOKEN', token)
-
-          if (window.localStorage) {
-            window.localStorage.setItem('user', JSON.stringify(data.user))
-            window.localStorage.setItem('token', token)
-          }
-
-          this.$router.push(data.redirect)
-        }
-      })
-      .catch(error => {
-        this.$store.commit('TOGGLE_LOADING')
-        console.log(error)
-
-        this.response = 'Server appears to be offline'
-        this.toggleLoading()
-      })
+      this.response = 'SignIn error'
+      this.toggleLoading()
     },
     toggleLoading () {
       this.loading = (this.loading === '') ? 'loading' : ''

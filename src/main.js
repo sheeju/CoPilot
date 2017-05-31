@@ -33,8 +33,8 @@ var router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    const authUser = JSON.parse(window.localStorage.getItem('authUser'))
-    if (authUser && authUser.access_token) {
+    const authUser = JSON.parse(window.localStorage.getItem('user'))
+    if (authUser) {
       next()
     } else {
       next({

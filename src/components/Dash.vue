@@ -119,18 +119,17 @@
             <li class="dropdown user user-menu">
               <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
                 <!-- The user image in the navbar-->
-                <img v-bind:src="demo.avatar" class="user-image" alt="User Image">
+                <img v-bind:src="googleuser.displayAvatar" class="user-image" alt="User Image">
                 <!-- hidden-xs hides the username on small devices so only the image appears. -->
-                <span class="hidden-xs">{{ demo.displayName }}</span>
+                <span class="hidden-xs">{{ googleuser.displayName }}</span>
               </a>
               <ul class="dropdown-menu">
                 <!-- User image -->
                 <li class="user-header">
-                  <img v-bind:src="demo.avatar" class="img-circle" alt="User Image">
+                  <img v-bind:src="googleuser.displayAvatar" class="img-circle" alt="User Image">
 
                   <p>
-                    Alexander Pierce - Web Developer
-                    <small>Member since Nov. 2012</small>
+                    {{ googleuser.displayName }}
                   </p>
                 </li>
                 <!-- Menu Body -->
@@ -154,7 +153,7 @@
                     <a href="#" class="btn btn-default btn-flat">Profile</a>
                   </div>
                   <div class="pull-right">
-                    <a href="#" class="btn btn-default btn-flat">Sign out</a>
+                    <a href="#" class="btn btn-default btn-flat" @click="logout">Sign out</a>
                   </div>
                 </li>
               </ul>
@@ -164,8 +163,8 @@
       </nav>
     </header>
     <!-- Left side column. contains the logo and sidebar -->
-    <sidebar :display-name="demo.displayName"
-             :picture-url="demo.avatar" />
+    <sidebar :display-name="googleuser.displayName"
+             :picture-url="googleuser.displayAvatar" />
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
@@ -194,7 +193,6 @@
 </template>
 
 <script>
-import faker from 'faker'
 import { mapState } from 'vuex'
 import config from '../config'
 import Sidebar from './Sidebar'
@@ -217,21 +215,29 @@ export default {
     }
   },
   computed: {
+    localComputed () {
+      console.log('localComputed')
+    },
     ...mapState([
-      'userInfo'
-    ]),
-    demo () {
-      return {
-        displayName: faker.name.findName(),
-        avatar: faker.image.avatar(),
-        email: faker.internet.email(),
-        randomCard: faker.helpers.createCard()
-      }
-    }
+      'userInfo',
+      'user',
+      'googleuser'
+    ])
   },
   methods: {
     changeloading () {
       this.$store.commit('TOGGLE_SEARCHING')
+    },
+    logout () {
+      this.$store.commit('SET_USER', null)
+      this.$store.commit('SET_TOKEN', null)
+
+      if (window.localStorage) {
+        window.localStorage.setItem('user', null)
+        window.localStorage.setItem('token', null)
+      }
+
+      this.$router.push('/login')
     }
   }
 }
